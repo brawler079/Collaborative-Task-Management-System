@@ -1,11 +1,12 @@
 import express from "express";
 import Project from "../models/Project.js";
 import protect from "../middleware/authMiddleware.js";
+import checkRole from "../middleware/roleMiddleware.js"; 
 
 const router = express.Router();
 
-// Create a Project
-router.post("/", protect, async (req, res) => {
+// Only Admins & Managers can create projects
+router.post("/", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   const { name, description } = req.body;
 
   try {
@@ -13,7 +14,7 @@ router.post("/", protect, async (req, res) => {
       name,
       description,
       createdBy: req.user._id,
-      members: [req.user._id], // Creator is auto-added
+      members: [req.user._id], 
     });
 
     res.status(201).json(project);
@@ -22,7 +23,7 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// Get All Projects for Logged-in User
+// Get All Projects for Logged-in User 
 router.get("/", protect, async (req, res) => {
   try {
     const projects = await Project.find({ members: req.user._id }).populate("createdBy", "name");
@@ -32,7 +33,7 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// Get a Single Project by ID
+// Get a Single Project by ID 
 router.get("/:id", protect, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id).populate("members", "name email");
@@ -44,8 +45,8 @@ router.get("/:id", protect, async (req, res) => {
   }
 });
 
-// Add a Member to a Project
-router.post("/:id/members", protect, async (req, res) => {
+// Only Admins & Managers can add a member to a project
+router.post("/:id/members", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   const { userId } = req.body;
 
   try {
@@ -63,8 +64,8 @@ router.post("/:id/members", protect, async (req, res) => {
   }
 });
 
-// Remove a Member from a Project
-router.delete("/:id/members/:userId", protect, async (req, res) => {
+// Only Admins & Managers can remove a member from a project
+router.delete("/:id/members/:userId", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
@@ -75,6 +76,18 @@ router.delete("/:id/members/:userId", protect, async (req, res) => {
     res.json({ message: "User removed from project", project });
   } catch (error) {
     res.status(500).json({ message: "Error removing user", error });
+  }
+});
+
+// Only Admins can delete projects
+router.delete("/:id", protect, checkRole(["Admin"]), async (req, res) => {
+  try {
+    const project = await Project.findByIdAndDelete(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    res.json({ message: "Project deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting project", error });
   }
 });
 
