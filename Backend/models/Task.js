@@ -8,8 +8,8 @@ const taskSchema = new mongoose.Schema(
     status: { type: String, enum: ["To-Do", "In Progress", "Completed"], default: "To-Do" },
     priority: { type: String, enum: ["Low", "Medium", "High"], default: "Medium" },
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
-    assignee: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Assigned user
-    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Created by
+    assignee: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
+    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     comments: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -17,7 +17,7 @@ const taskSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now },
       },
     ],
-    attachments: [{ type: String }], // File URLs
+    attachments: [{ type: String }], 
   },
   { timestamps: true }
 );

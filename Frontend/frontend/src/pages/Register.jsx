@@ -6,6 +6,7 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("Member"); 
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -13,8 +14,8 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     try {
-      await axios.post("http://localhost:5004/api/users/register", { name, email, password });
-      navigate("/login"); // ✅ Redirect to login after successful registration
+      await axios.post("http://localhost:5004/api/users/register", { name, email, password, role });
+      navigate("/login"); 
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");
     }
@@ -50,6 +51,19 @@ export default function Register() {
             required
             className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
           />
+
+          {/* Role Selection Dropdown */}
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+            className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
+          >
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="Member">Member</option>
+          </select>
+
           <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 p-2 rounded text-white font-bold">
             Register
           </button>

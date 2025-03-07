@@ -48,7 +48,7 @@ router.get("/profile", protect, async (req, res) => {
 // Get User by ID
 router.get("/:id", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password"); // Exclude password field
+    const user = await User.findById(req.params.id).select("-password"); 
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json(user);

@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProjectDetails from "./pages/ProjectDetails";
 import "./index.css";
+import { NewProject } from "./pages/NewProject";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/projects/new" element={<NewProject />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
           </Route>
         </Routes>

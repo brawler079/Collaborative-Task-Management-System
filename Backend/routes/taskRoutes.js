@@ -58,7 +58,6 @@ router.patch("/:id/status", protect, checkRole(["Member", "Manager", "Admin"]), 
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
-    // Ensure only the assigned user can update the task
     if (task.assignee.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "You can only update your assigned tasks" });
     }
@@ -95,9 +94,21 @@ router.post("/:id/comments", protect, async (req, res) => {
   }
 });
 
+// Fetch Comments for a Specific Task
+router.get("/:id/comments", protect, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id).populate("comments.user", "name email");
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    res.json(task.comments);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching comments", error: error.message });
+  }
+});
+
 // Attach a File & Notify Assignee
 router.post("/:id/files", protect, async (req, res) => {
-  const { fileUrl } = req.body; // In production, use file upload services like AWS S3
+  const { fileUrl } = req.body; 
 
   try {
     const task = await Task.findById(req.params.id);

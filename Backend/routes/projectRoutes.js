@@ -5,7 +5,7 @@ import checkRole from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-// Only Admins & Managers can create projects
+// Create a Project (Only Admins & Managers)
 router.post("/", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   const { name, description } = req.body;
 
@@ -17,35 +17,52 @@ router.post("/", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
       members: [req.user._id], 
     });
 
-    res.status(201).json(project);
+    res.status(201).json({ message: "Project created successfully", project });
   } catch (error) {
-    res.status(500).json({ message: "Error creating project", error });
+    res.status(500).json({ message: "Error creating project", error: error.message });
+  }
+});
+
+// Fetch all projects (Only for Admins)
+router.get("/all", protect, checkRole(["Admin"]), async (req, res) => {
+  try {
+    const projects = await Project.find()
+      .populate("createdBy", "name")
+      .populate("members", "name email");
+    res.json(projects);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching all projects", error: error.message });
   }
 });
 
 // Get All Projects for Logged-in User 
 router.get("/", protect, async (req, res) => {
   try {
-    const projects = await Project.find({ members: req.user._id }).populate("createdBy", "name");
+    const projects = await Project.find({ members: req.user._id })
+      .populate("createdBy", "name")
+      .populate("members", "name email");
     res.json(projects);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching projects", error });
+    res.status(500).json({ message: "Error fetching projects", error: error.message });
   }
 });
 
 // Get a Single Project by ID 
 router.get("/:id", protect, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate("members", "name email");
+    const project = await Project.findById(req.params.id)
+      .populate("createdBy", "name")
+      .populate("members", "name email");
+      
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     res.json(project);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching project", error });
+    res.status(500).json({ message: "Error fetching project", error: error.message });
   }
 });
 
-// Only Admins & Managers can add a member to a project
+// Add a Member to a Project (Only Admins & Managers)
 router.post("/:id/members", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   const { userId } = req.body;
 
@@ -53,33 +70,39 @@ router.post("/:id/members", protect, checkRole(["Admin", "Manager"]), async (req
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (!project.members.includes(userId)) {
-      project.members.push(userId);
-      await project.save();
+    if (project.members.includes(userId)) {
+      return res.status(400).json({ message: "User is already a member of this project" });
     }
 
-    res.json({ message: "User added to project", project });
+    project.members.push(userId);
+    await project.save();
+
+    res.json({ message: "User added to project successfully", project });
   } catch (error) {
-    res.status(500).json({ message: "Error adding user to project", error });
+    res.status(500).json({ message: "Error adding user to project", error: error.message });
   }
 });
 
-// Only Admins & Managers can remove a member from a project
+// Remove a Member from a Project (Only Admins & Managers)
 router.delete("/:id/members/:userId", protect, checkRole(["Admin", "Manager"]), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
+    if (!project.members.includes(req.params.userId)) {
+      return res.status(400).json({ message: "User is not a member of this project" });
+    }
+
     project.members = project.members.filter((id) => id.toString() !== req.params.userId);
     await project.save();
 
-    res.json({ message: "User removed from project", project });
+    res.json({ message: "User removed from project successfully", project });
   } catch (error) {
-    res.status(500).json({ message: "Error removing user", error });
+    res.status(500).json({ message: "Error removing user", error: error.message });
   }
 });
 
-// Only Admins can delete projects
+// Delete a Project (Only Admins)
 router.delete("/:id", protect, checkRole(["Admin"]), async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
@@ -87,7 +110,7 @@ router.delete("/:id", protect, checkRole(["Admin"]), async (req, res) => {
 
     res.json({ message: "Project deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting project", error });
+    res.status(500).json({ message: "Error deleting project", error: error.message });
   }
 });
 

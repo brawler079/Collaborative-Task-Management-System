@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5004/api/users"; // Backend Auth API
+const API_URL = "http://localhost:5004/api/users"; 
 
 // Register User
 export const registerUser = async (userData) => {
@@ -14,7 +14,7 @@ export const loginUser = async (userData) => {
   return res.data;
 };
 
-// Logout (Remove token)
+// Logout 
 export const logoutUser = () => {
   localStorage.removeItem("token");
 };

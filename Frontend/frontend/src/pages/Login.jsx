@@ -16,8 +16,8 @@ export default function Login() {
     try {
       const res = await axios.post("http://localhost:5004/api/users/login", { email, password });
       localStorage.setItem("token", res.data.token);
-      setUser(res.data.user); // ✅ Ensure user state updates
-      navigate("/dashboard"); // ✅ Redirect to dashboard after login
+      setUser(res.data.user); 
+      navigate("/dashboard"); 
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
     }

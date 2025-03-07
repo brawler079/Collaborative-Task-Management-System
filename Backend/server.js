@@ -49,7 +49,6 @@ const connectDB = async () => {
 
     console.log("MongoDB Connected");
 
-    // Start the server after DB connection
     httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
     console.error("MongoDB Connection Error:", error);

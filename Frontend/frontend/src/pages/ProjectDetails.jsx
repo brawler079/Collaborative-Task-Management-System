@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 
 export default function ProjectDetails() {
-  const { id } = useParams(); // Get project ID from URL
-  const navigate = useNavigate(); // Hook for navigation
+  const { id } = useParams(); 
+  const navigate = useNavigate(); 
   const [project, setProject] = useState(null);
   const [createdBy, setCreatedBy] = useState(null);
+  const [reporter, setReporter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloadMessage, setDownloadMessage] = useState("");
 
@@ -17,18 +18,9 @@ export default function ProjectDetails() {
     axios.get(`http://localhost:5004/api/projects/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(async (res) => {
+      .then((res) => {
         setProject(res.data);
-        if (res.data.createdBy) {
-          try {
-            const userRes = await axios.get(`http://localhost:5004/api/users/${res.data.createdBy}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setCreatedBy(userRes.data.name);
-          } catch (err) {
-            console.error("Error fetching user details:", err);
-          }
-        }
+        setCreatedBy(res.data.createdBy?.name || "Unknown"); 
         setLoading(false);
       })
       .catch((err) => {
@@ -42,9 +34,9 @@ export default function ProjectDetails() {
     try {
       const response = await axios.get(`http://localhost:5004/api/reports/${id}/${format}`, {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob", // Ensure file is downloaded correctly
+        responseType: "blob", 
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -52,8 +44,8 @@ export default function ProjectDetails() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      setDownloadMessage(`✅ ${format.toUpperCase()} report downloaded successfully!`);
+
+      setDownloadMessage(`${format.toUpperCase()} report downloaded successfully!`);
       setTimeout(() => setDownloadMessage(""), 3000);
     } catch (err) {
       console.error("Error downloading report:", err);
@@ -77,7 +69,7 @@ export default function ProjectDetails() {
         </CardHeader>
         <CardContent>
           <p className="text-gray-400">{project.description || "No description available."}</p>
-          <p className="mt-4 text-sm text-gray-500">Created by: {createdBy || "Unknown"}</p>
+          <p className="mt-4 text-sm text-gray-500">Created by: {createdBy}</p>
         </CardContent>
       </Card>
       <div className="mt-6 flex gap-4">
